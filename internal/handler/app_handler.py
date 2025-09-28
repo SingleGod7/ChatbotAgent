@@ -6,8 +6,20 @@ from pkg.response.response import success_json, fail_json, validation_error_json
 
 from internal.exception.exception import FailException
 
+from dataclasses import dataclass
+from injector import inject
+from internal.service import AppService
+
+@inject
+@dataclass
 class AppHandler():
     """应用处理器"""
+    app_service : AppService
+
+    def create_app(self):
+        app = self.app_service.create_app()
+        return success_message(f"应用创建成功，id为{app.id}")
+
     def ping(self):
         raise FailException()
 
