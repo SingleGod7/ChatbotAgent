@@ -6,7 +6,7 @@ def _get_env(key):
 
 def _get_bool_env(key):
     value = _get_env(key)
-    return value.lower == "True" if value is not None else False
+    return value.lower() == "True" if value is not None else False
 
 class Config:
     def __init__(self):
