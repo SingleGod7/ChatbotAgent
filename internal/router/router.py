@@ -16,4 +16,7 @@ class Router:
         bp.add_url_rule("/app", methods=["POST"], view_func=self.app_handler.create_app)
         bp.add_url_rule("/ping", "ping", self.app_handler.ping, methods=["GET"])
         bp.add_url_rule("/app/completion", "completion", self.app_handler.completion, methods=["POST"])
+        bp.add_url_rule("/app/<uuid:id>", "get_app", self.app_handler.get_app)
+        bp.add_url_rule("/app/<uuid:id>", "update_app", self.app_handler.update_app, methods=["POST"])
+        bp.add_url_rule("/app/<uuid:id>/delete", "delete_app", self.app_handler.delete_app, methods=["POST"])
         app.register_blueprint(bp)

@@ -5,14 +5,22 @@ from config import Config
 from internal.exception import CustomException
 from pkg.response import Response, json, HttpCode
 import os
-from flask_sqlalchemy import SQLAlchemy
+from pkg.sqlalchemy import SQLAlchemy
+from flask_migrate import Migrate
 
 from internal.model import App
 
 
 class Http(Flask):
 
-    def __init__(self, *args, config: Config,db: SQLAlchemy, router: Router, **kwargs):
+    def __init__(
+            self, 
+            *args, 
+            config: Config, 
+            db: SQLAlchemy, 
+            migrate : Migrate,
+            router: Router, 
+            **kwargs):
         super().__init__(*args, **kwargs)
         router.register_routes(self)
 
@@ -21,9 +29,7 @@ class Http(Flask):
         self.register_error_handler(Exception, self._register_error_handler)
 
         db.init_app(self)
-        with self.app_context():
-            _ = App()
-            db.create_all()
+        migrate.init_app(self, db, directory="internal/migration")
 
     def _register_error_handler(self, error):
         """Custom error handler"""

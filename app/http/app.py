@@ -7,23 +7,24 @@ sys.path.append(os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(
 from internal.server import Http
 from internal.router import Router
 from config import Config
-from injector import Injector, Module, Binder, singleton
+from injector import Injector
 
-from flask_sqlalchemy import SQLAlchemy
-from internal.extension.database_extension import db
+from pkg.sqlalchemy import SQLAlchemy
+from flask_migrate import Migrate
+
+from .module import ExtensionModule
 
 dotenv.load_dotenv()
 
 conf = Config()
 
-class ExtensionModule(Module):
-    def configure(self, binder: Binder):
-        # 直接绑定已经创建的 db 实例
-        binder.bind(SQLAlchemy, to=db)
-
 # 先创建配置，然后初始化 injector
-injector = Injector([ExtensionModule()])
-app = Http(__name__, router=injector.get(Router), db=injector.get(SQLAlchemy), config=conf)
+injector = Injector([ExtensionModule])
+app = Http(__name__, 
+           router=injector.get(Router), 
+           db=injector.get(SQLAlchemy), 
+           migrate=injector.get(Migrate),
+           config=conf)
 
 if __name__ == "__main__":
     app.run(debug=True)

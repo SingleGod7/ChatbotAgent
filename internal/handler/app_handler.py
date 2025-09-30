@@ -9,7 +9,7 @@ from internal.exception.exception import FailException
 from dataclasses import dataclass
 from injector import inject
 from internal.service import AppService
-
+import uuid
 @inject
 @dataclass
 class AppHandler():
@@ -19,6 +19,17 @@ class AppHandler():
     def create_app(self):
         app = self.app_service.create_app()
         return success_message(f"应用创建成功，id为{app.id}")
+    
+    def get_app(self, id:uuid.UUID):
+        app = self.app_service.get_app(id)
+        return success_message(f"应用获取成功，名字为{app.name}")
+    def update_app(self, id:uuid.UUID):
+        app = self.app_service.update_app(id)
+        return success_message(f"应用更新成功，名字为{app.name}")
+
+    def delete_app(self, id:uuid.UUID):
+        app = self.app_service.delete_app(id)
+        return success_message(f"应用删除成功，id为{app.id}")
 
     def ping(self):
         raise FailException()
