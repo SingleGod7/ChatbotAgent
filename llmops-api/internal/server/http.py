@@ -35,8 +35,8 @@ class Http(Flask):
             r"/*" : {
                 "origins" : "*",
                 "supports_credentials" : True,
-                "method" : ["GET", "POST"],
-                "allow_headers" : ["Content-Type"]
+                # "method" : ["GET", "POST"],
+                # "allow_headers" : ["Content-Type"]
             }
         })
 

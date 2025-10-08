@@ -3,7 +3,8 @@
     "allow": [
       "Bash(python:*)",
       "Bash(sed:*)",
-      "Bash(gh pr:*)"
+      "Bash(gh pr:*)",
+      "Bash(pip install:*)"
     ],
     "deny": [],
     "ask": []

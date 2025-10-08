@@ -1,6 +1,8 @@
 from flask import request
 import os
-from openai import OpenAI
+from langchain_openai import ChatOpenAI
+from langchain.prompts import PromptTemplate
+from langchain.output_parsers import StrOutParser
 from internal.schema.app_schema import CompletionReq
 from pkg.response.response import success_json, fail_json, validation_error_json, success_message
 
@@ -39,17 +41,17 @@ class AppHandler():
         if not req.validate():
             return validation_error_json(req.errors)
         query = request.json.get("query")
-        client = OpenAI(
-            base_url=os.getenv("OPENAI_BASE_URL"),
-        )
+        llm = ChatOpenAI(
+                temperature=0.7,
+                model="glm-4.6",
+                openai_api_key=os.getenv("OPENAI_API_KEY"),
+                openai_api_base="https://open.bigmodel.cn/api/paas/v4/"
+            )
 
-        response = client.chat.completions.create(
-            model="glm-4.5",
-            messages=[
-                {"role": "system", "content": "你是智谱开发的全世界最强的ai助手"},
-                {"role": "user", "content": query}
-            ]
-        )
+        prompt = PromptTemplate.from_template("你是一个有帮助的助手，用户问你的问题是：{query}。请给出详细的回答。")
+        parser = StrOutParser()
+        chain = prompt | llm | parser
+        response = chain.invoke({"query": query})
 
-        content = response.choices[0].message.content
+        content = response.content
         return success_json(data={"response": content})

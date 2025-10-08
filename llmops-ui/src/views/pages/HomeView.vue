@@ -5,7 +5,10 @@ import { Message } from '@arco-design/web-vue'
 import { debugApp } from '@/services/app.ts'
 
 const query = ref('')
-const messages = ref<any[]>([])
+const messages = ref<any[]>([
+  { role: 'ai', content: 'good' },
+  { role: 'human', content: 'bad' },
+])
 const isLoading = ref(false)
 const route = useRoute()
 
@@ -33,7 +36,7 @@ const send = async () => {
     isLoading.value = true
 
     const response = await debugApp(route.params.app_id as string, humanQuery)
-    const content = response.data.content
+    const content = response.data.response
 
     messages.value.push({
       role: 'ai',
@@ -42,6 +45,10 @@ const send = async () => {
   } finally {
     isLoading.value = false
   }
+}
+
+const no_implement = () => {
+  Message.warning('前面的区域以后再来探索把!')
 }
 </script>
 
@@ -53,7 +60,7 @@ const send = async () => {
       顶部导航
     </header>
     <!--底部内容区 -->
-    <div class="flex flex-row h-[cal(100vh-74px)]">
+    <div class="flex flex-row h-[calc(100vh-74px)]">
       <div class="w-2/3 bg-gray-50 h-full">
         <header class="flex items-center h-16 border-b border-gray-200 px-7 text-xl text-gray-700">
           应用编排
@@ -69,6 +76,94 @@ const send = async () => {
         >
           调试与预览
         </header>
+        <div class="h-full min-h-0 px-6 py-7 overflow-x-hidden overflow-y-scroll scrollbar-w-none">
+          <div class="flex flex-row gap-2 mb-6" v-for="message in messages" :key="message.content">
+            <!--avatar-->
+            <a-avatar
+              v-if="message.role == 'human'"
+              :style="{ backgroundColor: '#3370ff' }"
+              class="flex-shrink-0"
+              :size="30"
+            >
+              舟
+            </a-avatar>
+            <a-avatar
+              v-else
+              :style="{ backgroundColor: '#00d0b6' }"
+              class="flex-shrink-0"
+              :size="30"
+            >
+              <icon-robot :size="35" />
+            </a-avatar>
+            <div class="flex flex-col gap-2">
+              <div class="font-semibold text-gray-700">
+                {{ message.role === 'human' ? '舟舟' : 'GLM-4.6 Chatbot' }}
+              </div>
+              <div
+                v-if="message.role === 'human'"
+                class="max-w-max bg-blue-700 text-white border border-blue-800 px-4 py-3 rounded-2xl leading-5"
+              >
+                {{ message.content }}
+              </div>
+              <div
+                v-else
+                class="max-w-max bg-gray-100 text-gray-900 border border-gray-200 px-4 py-3 rounded-2xl leading-5"
+              >
+                {{ message.content }}
+              </div>
+            </div>
+          </div>
+          <!-- 没有对话时候的背景 -->
+          <div
+            v-if="!messages.length"
+            class="mt-[200px] flex flex-col items-center justify-center gap-2"
+          >
+            <a-avatar :size="70" shape="square" :style="{ backgroundColor: '#00d0b6' }">
+              <icon-apps />
+            </a-avatar>
+            <div class="text-2xl font-semibold text-gray-900">GLM-4.6 聊天机器人</div>
+          </div>
+          <div v-if="isLoading" class="flex flex-row gap-2 mb-6">
+            <a-avatar :style="{ backgroundColor: '#00d0b6' }" class="flex-shrink-0" :size="30">
+              <icon-robot :size="35" />
+            </a-avatar>
+            <div class="flex flex-col gap-2">
+              <div class="font-semibold text-gray-700">GLM-4.6 聊天机器人</div>
+              <div
+                class="max-w-max bg-gray-100 text-gray-900 border border-gray-200 px-4 py-3 rounded-2xl leading-5"
+              >
+                <icon-loading />
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="w-full flex-shrink-0 flex flex-col">
+          <div class="px-6 flex items-center gap-4">
+            <a-button class="flex-shrink-0" type="text" shape="circle" @click="clearMessages">
+              <template #icon>
+                <icon-empty size="16" :style="{ color: '#374151' }" />
+              </template>
+            </a-button>
+            <div
+              class="h-[50px] flex items-center gap-2 px-4 flex-1 border border-gray-200 rounded-full"
+            >
+              <input type="text" class="flex-1 outline-0" v-model="query" @keyup.enter="send" />
+              <a-button type="text" shape="circle" @click="no_implement">
+                <template #icon>
+                  <icon-plus-circle size="16" :style="{ color: '#374151' }" />
+                </template>
+              </a-button>
+              <a-button type="text" shape="circle" @click="send">
+                <template #icon>
+                  <icon-send size="16" :style="{ color: '#1d4ed8' }" />
+                </template>
+              </a-button>
+            </div>
+          </div>
+          <div class="text-center text-gray-500 text-xs py-4">
+            内容由AI生成，无法确保真实准确，仅供参考。
+          </div>
+        </div>
       </div>
     </div>
   </div>
