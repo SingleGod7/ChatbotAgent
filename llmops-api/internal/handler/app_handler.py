@@ -1,7 +1,11 @@
 from flask import request
 import os
 from langchain_openai import ChatOpenAI
-from langchain.prompts import PromptTemplate
+from langchain.prompts import ChatPromptTemplate
+from langchain.prompts.chat import MessagePlaceholder
+from langchain.memory import ConversationWindowMemory, FileChatMessageHistory
+from langchain_core.runnables import RunnablePassthrough, RunnableLambda
+from operator import itemgetter
 from langchain.output_parsers import StrOutParser
 from internal.schema.app_schema import CompletionReq
 from pkg.response.response import success_json, fail_json, validation_error_json, success_message
@@ -48,9 +52,19 @@ class AppHandler():
                 openai_api_base="https://open.bigmodel.cn/api/paas/v4/"
             )
 
-        prompt = PromptTemplate.from_template("你是一个有帮助的助手，用户问你的问题是：{query}。请给出详细的回答。")
+        prompt = ChatPromptTemplate.from_messages([("system", "你是一个有帮助的助手，你可以根据用户问你的问题幽默的回答"),
+                                                   MessagePlaceholder("history"),
+                                                   ("human", "{query}")])
+
+        
+        memory = ConversationWindowMemory(k=5, 
+                                          input_key='query', 
+                                          output_key='output', 
+                                          return_messages=True,
+                                          chat_memory=FileChatMessageHistory(file_path=f"./storage/chat_history.txt"))
+
         parser = StrOutParser()
-        chain = prompt | llm | parser
+        chain = RunnablePassthrough.assign( history= RunnableLambda(memory.load_memory_variables) | itemgetter("history") ) | prompt | llm | parser
         response = chain.invoke({"query": query})
 
         content = response.content
